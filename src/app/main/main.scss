@@ -1,0 +1,37 @@
+.addButton {
+
+    background-color: #00bc00 !important;
+
+}
+
+.deleteButton {
+
+  background-color: #e41915 !important;
+
+}
+
+.searchButton {
+
+  height: 25px;
+  margin-top: 15px;
+
+}
+
+
+
+.pantry{
+  height: 900px;
+}
+
+.warning{
+  color: #e41915 !important;
+}
+
+md-input-container{
+  margin-bottom: 0px !important;
+}
+
+
+md-checkbox.md-default-theme.md-checked .md-icon, md-checkbox.md-checked .md-icon {
+  background-color: rgba(2, 20, 255, 0.87);
+}

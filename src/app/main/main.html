@@ -1,28 +1,146 @@
 <div layout="column" layout-fill>
 
   <md-content>
-    <header>
-      <acme-navbar creation-date="main.creationDate"></acme-navbar>
-    </header>
 
     <section class="jumbotron">
-      <h1>Bienvenue sur l'application de Nutrition</h1>
+      <h1>Welcome to Nutrition App</h1>
       <p class="lead">
         <img src="assets/images/cutlery-logo.png" alt="Logo Couverts"><br>
 
       </p>
     </section>
 
-    <div class="techs" layout-align="center" flex="100">
-      <md-autocomplete md-selected-item="selectedItem" md-search-text="searchText" md-items="item in getMatches(searchText)" md-item-text="item.display">
-        <md-item-template>
-          <span md-highlight-text="searchText">{{item.display}}</span>
-        </md-item-template>
-        <md-not-found>
-          No matches found.
-        </md-not-found>
-      </md-autocomplete>
+    <div layout="row" layout-align="center" flex="100">
+      <div layout="column">
+        <md-input-container>
+          <label>Recherche</label>
+          <input ng-model="searchText">
+        </md-input-container>
+        <md-checkbox ng-model="advancedSearch" aria-label="Advanced Search">
+          Advanced Search
+        </md-checkbox>
+      </div>
+      <md-input-container ng-show="advancedSearch" ng-style="{'margin-left': '10px', 'margin-right': '10px' }">
+        <label>Maximum Calories (kcal)</label>
+        <input type="number" ng-model="searchLimit">
+      </md-input-container>
+      <md-button class="md-raised md-primary searchButton" ng-click="getMatches()">Rechercher</md-button>
     </div>
+
+    <div class="layout-margin" layout="row" layout-align="space-between start">
+      <div flex="50">
+        <table class="dataTable row-border hover"  datatable="ng" dt-instance="dtInstance" dt-options="table.dtOptions">
+          <thead>
+          <tr>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Product Name</span>
+              </div>
+            </th>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Brand</span>
+              </div>
+            </th>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Calories (kcal)</span>
+              </div>
+            </th>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Sodium (mg)</span>
+              </div>
+            </th>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Saturated Fat (g)</span>
+              </div>
+            </th>
+            <th class="secondary-text">
+              <div class="table-header">
+                <span class="column-title">Actions</span>
+              </div>
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr ng-repeat="result in results">
+            <td><span>{{result.fields.item_name}}</span></td>
+            <td><span>{{result.fields.brand_name}}</span></td>
+            <td><span>{{result.fields.nf_calories}}</span></td>
+            <td><span>{{result.fields.nf_sodium}}</span></td>
+            <td><span>{{result.fields.nf_saturated_fat}}</span></td>
+            <td>
+            <span>
+                <md-button class="md-fab md-mini addButton" ng-click="addProductToPantry(result)" aria-label="Add to pantry">
+                    <i class="material-icons" ng-style="{color: 'white', 'font-size':'25px', 'padding-top':'7px'}">add</i>
+                  <md-tooltip><span>Add to pantry</span></md-tooltip>
+                </md-button>
+            </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div layout="column" flex>
+        <md-toolbar>
+          <div class="md-toolbar-tools">Pantry</div>
+          <div class="md-toolbar-tools" layout="row" layout-align="space-between center">
+            <span>Calories: {{pantryCalories()}} kcal</span>
+            <span ng-class="pantrySodium() > 5000 ? 'warning' : ''">Sodium: {{pantrySodium()}} mg</span>
+            <span>Satured Fat: {{pantrySaturedFat()}} g</span>
+          </div>
+        </md-toolbar>
+        <md-content class="pantry md-whiteframe-2dp" flex>
+          <md-list layout-padding layout-align="center center">
+            <md-list-item class="md-3-line" ng-repeat="product in pantry track by $index">
+              <div layout="row" layout-align="space-between center" class="md-list-item-text">
+                <div layout="column" flex="70">
+                    <div layout="row" layout-align="space-between center">
+                        <span>{{product.fields.item_name}} From {{product.fields.brand_name}}</span>
+                    </div>
+                    <div layout="row" layout-align="space-between center">
+                      <div layout="column">
+                        <span>Calories :</span>
+                        <span>{{product.fields.nf_calories * product.quantity}} kcal</span>
+                      </div>
+                      <div layout="column">
+                        <span>Sodium :</span>
+                        <span>{{product.fields.nf_sodium  * product.quantity}} mg</span>
+                      </div>
+                      <div layout="column">
+                        <span>Satured Fat :</span>
+                        <span>{{product.fields.nf_saturated_fat * product.quantity}} g</span>
+                      </div>
+                    </div>
+                </div>
+                <div layout="row" layout-align="end center" flex="30">
+                  <div layout="column">
+                    <span>Quantity :</span>
+                    <span><input type="number" ng-model="product.quantity" ng-style="{width: '60px'}"></span>
+                  </div>
+                  <div layout="column">
+                  <span>
+                    <md-button class="md-fab md-mini deleteButton" ng-click="deleteProductFromPantry($index)" aria-label="Delete from pantry">
+                        <i class="material-icons" ng-style="{color: 'white', 'font-size':'25px', 'padding-top':'7px'}">delete</i>
+                      <md-tooltip><span>Delete from pantry</span></md-tooltip>
+                    </md-button>
+                  </span>
+                  </div>
+                </div>
+
+
+              </div>
+              <md-divider></md-divider>
+            </md-list-item>
+          </md-list>
+        </md-content>
+      </div>
+    </div>
+
+
   </md-content>
 
 </div>
