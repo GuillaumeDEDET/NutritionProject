@@ -1,0 +1,42 @@
+{
+  "profiles" : [
+    {
+      "id": 1,
+      "label": "Enfant",
+      "caloriesMax": 1600
+    },
+    {
+      "id": 2,
+      "label": "Adolescent",
+      "caloriesMax": 2900
+    },
+    {
+      "id": 3,
+      "label": "Adolescente",
+      "caloriesMax": 2400
+    },
+    {
+      "id": 5,
+      "label": "Homme",
+      "caloriesMax": 2800
+    },
+    {
+      "id": 6,
+      "label": "Femme",
+      "caloriesMax": 2200
+    },
+    {
+      "id": 8,
+      "label": "Homme âgé",
+      "caloriesMax": 2000
+    },
+    {
+      "id": 9,
+      "label": "Femme âgée",
+      "caloriesMax": 1800
+    }
+
+  ]
+
+
+}

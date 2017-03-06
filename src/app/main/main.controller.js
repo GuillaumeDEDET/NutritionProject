@@ -6,121 +6,185 @@
     .controller('MainController', MainController);
 
   /** @ngInject */
-  function MainController($timeout, webDevTec, toastr, nutritionixService, apiKey, appId, $scope, pantryService) {
+  function MainController(toastr, nutritionixService, profilesService, pantryService) {
+
     var vm = this;
 
-    $scope.results = {};
-    $scope.pantry = pantryService.getData() || [];
-    console.log($scope.pantry);
-    /*if($scope.pantry === undefined)
-    {
-      $scope.pantry = [];
-    }*/
-    vm.awesomeThings = [];
-    vm.classAnimation = '';
-    vm.creationDate = 1487176899634;
-    vm.showToastr = showToastr;
-    //vm.getMatches = getMatches;
+    init();
 
-    $scope.table = {
-      columns: ["Product Name", "Brand", "Calories", "Sodium", "Saturated Fat", "Actions"],
-      dtOptions: {
-        dom: '<"top"f>rt<"bottom"<"left"<"length"l>><"right"<"info"i><"pagination"p>>>',
-        pagingType: 'simple',
-        autoWidth: false,
-        responsive: true,
-        rowReorder: true,
-        //language: {url: 'app/i18n/fr/datatable.json'},
-        order: [[0, 'asc']]
-      },
-    };
+    /**
+     *  Initialize controller
+     */
+    function init(){
 
-    activate();
+      vm.results = {};
 
-    function activate() {
-      getWebDevTec();
-      $timeout(function() {
-        vm.classAnimation = 'rubberBand';
-      }, 4000);
+      // Initialize pantry with localStorage if exist or empty
+      vm.pantry = pantryService.getData() || [];
+
+      vm.loadingProgress = false;
+
+      // Load profiles from service
+      profilesService.getProfiles().then(function(d) {
+        vm.profiles = d.profiles;
+      });
+
+      // Initialize activeProfile with localStorage if exist or with 'None'
+      vm.activeProfile = profilesService.getActiveProfile() || 'None';
+
+      // Initialize datatable options
+      vm.table = {
+        columns: ["Product Name", "Brand", "Calories", "Sodium", "Saturated Fat", "Actions"],
+        dtOptions: {
+          dom: '<"top"f>rt<"bottom"<"left"<"length"l>><"right"<"info"i><"pagination"p>>>',
+          pagingType: 'simple',
+          autoWidth: false,
+          responsive: true,
+          rowReorder: true,
+
+          order: [[0, 'asc']]
+        }
+      };
+
     }
 
-    function showToastr() {
-      toastr.info('Fork <a href="https://github.com/Swiip/generator-gulp-angular" target="_blank"><b>generator-gulp-angular</b></a>');
-      vm.classAnimation = '';
-    }
+    // NUTRITIONIX METHOD \\
 
-    $scope.pantryCalories = function() {
-      var calories = 0;
-      $scope.pantry.forEach(function (product) {
-        calories += product.fields.nf_calories * product.quantity;
-      });
-      //$scope.checkCaloriesLimit(calories);
-      return calories;
-    };
+    /**
+     * Get results of search from nutritionixService
+     */
+    vm.getMatches = function(){
 
-    $scope.pantrySaturedFat = function() {
-      var saturedFat = 0;
-      $scope.pantry.forEach(function (product) {
-        saturedFat += product.fields.nf_saturated_fat * product.quantity;
-      });
-      return saturedFat;
-    };
+      // Active the loading circle element
+      vm.loadingProgress = true;
 
-    $scope.pantrySodium = function() {
-      var sodium = 0;
-      $scope.pantry.forEach(function (product) {
-        sodium += product.fields.nf_sodium * product.quantity;
-      });
-      $scope.checkSodiumLimit(sodium);
-      return sodium;
-    };
-
-    $scope.checkCaloriesLimit = function (calories) {
-       if(calories > profile.getMaxCalories()){
-       toastr.error('You have exceeded the maximum recommended calories limit per day !'); // Add error message
-       }
-    };
-
-    $scope.checkSodiumLimit = function(sodium) {
-      if(sodium > 5000){
-        toastr.error('You have exceeded the maximum recommended  sodium limit per day (5g) !'); // Add error message
-      }
-    };
-
-    $scope.getMatches = function(){
-      if($scope.advancedSearch && $scope.searchLimit){
-        nutritionixService.getAdvancedProducts($scope.searchText, $scope.searchLimit).then(function(d) {
-          $scope.results = d.hits;
-          console.log($scope.results);
+      //Check if its an advanced search or normal search
+      if(vm.advancedSearch && vm.searchLimit){
+        nutritionixService.getAdvancedProducts(vm.searchText, vm.searchLimit).then(function(d) {
+          vm.results = d.hits;
+          vm.loadingProgress = false;
         });
       }
       else
       {
-        nutritionixService.getProducts($scope.searchText).then(function(d) {
-          $scope.results = d.hits;
-          console.log($scope.results);
+        nutritionixService.getProducts(vm.searchText).then(function(d) {
+          vm.results = d.hits;
+          vm.loadingProgress = false;
         });
       }
+
     };
 
-    $scope.addProductToPantry = function (product) {
+    // PROFILES METHODS \\
+
+    /**
+     * Return the limit of calories for active profile from profilesService
+     *
+     * @returns {Number} Max Calories
+     */
+    vm.maxCalories = function () {
+
+      return profilesService.getMaxCalories();
+
+    };
+
+    /**
+     * Save Profile in localStorage in profilesService
+     */
+    vm.saveProfile = function(){
+
+      profilesService.setActiveProfile(vm.activeProfile);
+
+    };
+
+    // PANTRY METHODS \\
+
+    /**
+     * Get the number of Calories in the Pantry from pantryService
+     *
+     * @returns {Number} Calories in the Pantry
+     */
+    vm.pantryCalories = function() {
+
+      var calories = pantryService.getPantryCalories();
+
+      // Check if the Calories limit is reached
+      vm.checkCaloriesLimit(calories);
+
+      return calories;
+
+    };
+
+    /**
+     * Get the number of Satured Fat in the Pantry from pantryService
+     *
+     * @returns {Number} Satured Fat in the Pantry
+     */
+    vm.pantrySaturedFat = function() {
+
+      return pantryService.getPantrySaturedFat();
+
+    };
+
+    /**
+     * Get the number of Sodium in the Pantry from pantryService
+     *
+     * @returns {Number} Sodium in the Pantry
+     */
+    vm.pantrySodium = function() {
+
+      return pantryService.getPantrySodium();
+
+    };
+
+    /**
+     * Check if the number Calories > limit defined by Profile
+     *
+     * @param calories
+     */
+    vm.checkCaloriesLimit = function (calories) {
+
+       if(calories > vm.maxCalories() && vm.maxCalories()){
+
+         // Call to toastr library to add a toast for this limit
+         toastr.error('You have exceeded the maximum recommended calories limit per day !');
+
+       }
+
+    };
+
+    /**
+     * Add a product to pantry
+     *
+     * @param product
+     */
+    vm.addProductToPantry = function (product) {
+
+      // Set product quantity to 1 by default
       product.quantity = 1;
-      $scope.pantry.push(product);
-      console.log($scope.pantry);
-      pantryService.setData($scope.pantry);
+
+      // Add product to pantry
+      vm.pantry.push(product);
+
+      // Save pantry in pantryService
+      pantryService.setData(vm.pantry);
+
     };
 
-    $scope.deleteProductFromPantry = function (index) {
-      $scope.pantry.splice(index,1);
-      pantryService.setData($scope.pantry);
+    /**
+     * Delete a product from pantry
+     *
+     * @param index
+     */
+    vm.deleteProductFromPantry = function (index) {
+
+      // Delete a product from pantry
+      vm.pantry.splice(index,1);
+
+      // Save pantry in pantryService
+      pantryService.setData(vm.pantry);
+
     };
 
-    function getWebDevTec() {
-      vm.awesomeThings = webDevTec.getTec();
-
-      angular.forEach(vm.awesomeThings, function(awesomeThing) {
-        awesomeThing.rank = Math.random();
-      });
-    }
   }
 })();
