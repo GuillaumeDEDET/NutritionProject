@@ -2,37 +2,37 @@
   "profiles" : [
     {
       "id": 1,
-      "label": "Enfant",
+      "label": "Child",
       "caloriesMax": 1600
     },
     {
       "id": 2,
-      "label": "Adolescent",
+      "label": "Teenager (Man)",
       "caloriesMax": 2900
     },
     {
       "id": 3,
-      "label": "Adolescente",
+      "label": "Teenager (Woman)",
       "caloriesMax": 2400
     },
     {
       "id": 5,
-      "label": "Homme",
+      "label": "Man",
       "caloriesMax": 2800
     },
     {
       "id": 6,
-      "label": "Femme",
+      "label": "Woman",
       "caloriesMax": 2200
     },
     {
       "id": 8,
-      "label": "Homme âgé",
+      "label": "Old Man",
       "caloriesMax": 2000
     },
     {
       "id": 9,
-      "label": "Femme âgée",
+      "label": "Old Woman",
       "caloriesMax": 1800
     }
 
